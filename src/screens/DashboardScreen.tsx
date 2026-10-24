@@ -302,7 +302,7 @@ function StatCard({ item }: { item: (typeof STATS)[number] }) {
 }
 const sc = StyleSheet.create({
   card: {
-    flex: 1, minWidth: 150,
+    flex: 1,
     backgroundColor: C.cardBg, borderRadius: 14, borderWidth: 1,
     padding: 18, marginHorizontal: 5,
     shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
@@ -767,27 +767,33 @@ const mtb = StyleSheet.create({
   bar: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: C.headerBg, borderBottomWidth: 1, borderBottomColor: C.border,
-    paddingHorizontal: 18, paddingVertical: 13, gap: 10,
+    paddingHorizontal: 14, paddingVertical: 11, gap: 8,
   },
   brand: { fontSize: 20, fontWeight: '900', color: C.textPrimary, letterSpacing: -0.5 },
   brandPlus: { color: C.purple },
   avatar: {
     width: 30, height: 30, borderRadius: 15, backgroundColor: C.avatarBg,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
   avatarText: { fontSize: 12, fontWeight: '700', color: '#fff' },
   logoutBtn: {
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
     backgroundColor: C.roseDim, borderWidth: 1, borderColor: C.roseBorder,
+    flexShrink: 0,
   },
-  logoutLabel: { fontSize: 12, fontWeight: '600', color: C.rose },
-  tabsScroll: { backgroundColor: C.sidebarBg, borderBottomWidth: 1, borderBottomColor: C.border },
-  tabsContent: { paddingHorizontal: 12, paddingVertical: 8, gap: 4 },
-  tab: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8,
+  logoutLabel: { fontSize: 11, fontWeight: '600', color: C.rose },
+  // The ScrollView must not exceed the viewport width.
+  // overflow: 'hidden' on the outer view prevents the scroll container from
+  // leaking and causing a page-level horizontal scroll bar.
+  tabsScroll: {
+    backgroundColor: C.sidebarBg,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
   },
+  tabsContent: { paddingHorizontal: 10, paddingVertical: 8, gap: 4 },
+  tab: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   tabActive: { backgroundColor: C.purpleDim, borderWidth: 1, borderColor: C.purpleBorder },
-  tabText: { fontSize: 13, color: C.textSec, fontWeight: '500' },
+  tabText: { fontSize: 13, color: C.textSec, fontWeight: '500', flexShrink: 1 },
   tabTextActive: { color: C.purpleLight, fontWeight: '700' },
 });
 
@@ -847,7 +853,11 @@ function OverviewContent({ user, wide, onQuickAction }: {
       {/* ── Stat cards ──────────────────────────────────────────── */}
       <Text style={ov.sectionLabel}>OVERVIEW</Text>
       <View style={[ov.statsRow, !wide && ov.statsRowMobile]}>
-        {STATS.map((s) => <StatCard key={s.id} item={s} />)}
+        {STATS.map((s) => (
+          <View key={s.id} style={!wide ? ov.statCardMobileWrap : undefined}>
+            <StatCard item={s} />
+          </View>
+        ))}
       </View>
 
       {/* ── Two-column main (desktop) / single-column (mobile) ─── */}
@@ -875,15 +885,15 @@ function OverviewContent({ user, wide, onQuickAction }: {
 
 const ov = StyleSheet.create({
   scroll: { flex: 1 },
-  content: { padding: 22, paddingBottom: 48 },
+  content: { padding: 16, paddingBottom: 48 },
 
   // Header
   headerRow: {
     flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 24,
+    alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 20,
   },
-  headerLeft: { flex: 1, minWidth: 200 },
-  greeting: { fontSize: 22, fontWeight: '800', color: C.textPrimary, letterSpacing: -0.3, marginBottom: 3 },
+  headerLeft: { flex: 1, minWidth: 0 },
+  greeting: { fontSize: 20, fontWeight: '800', color: C.textPrimary, letterSpacing: -0.3, marginBottom: 3 },
   date: { fontSize: 12, color: C.textMuted, marginBottom: 4 },
   tagline: { fontSize: 13, color: C.textSec },
   domainBadge: {
@@ -902,8 +912,12 @@ const ov = StyleSheet.create({
   },
 
   // Stat cards
+  // Desktop/tablet: side-by-side row (flex row, no wrap)
   statsRow: { flexDirection: 'row', marginHorizontal: -5, marginBottom: 22, flexWrap: 'nowrap' },
-  statsRowMobile: { flexWrap: 'wrap', rowGap: 10 },
+  // Mobile: stack each card full-width
+  statsRowMobile: { flexDirection: 'column', marginHorizontal: 0, gap: 10 },
+  // Wrapper resets the card's horizontal margin when stacked
+  statCardMobileWrap: { marginHorizontal: 0, width: '100%' },
 
   // Two-column layout
   twoCol: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
