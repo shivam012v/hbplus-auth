@@ -1,0 +1,22 @@
+[build]
+  # Command Netlify runs to build the web bundle.
+  # npx expo export -p web outputs to dist/ by default.
+  command = "npx expo export -p web"
+
+  # Folder that Netlify serves after the build completes.
+  publish = "dist"
+
+  # Node version — match your local version (18+).
+  [build.environment]
+    NODE_VERSION = "18"
+
+# ── SPA fallback ───────────────────────────────────────────────────────────────
+# React Navigation handles routing client-side. Without this rule, refreshing
+# any URL other than / (e.g. /dashboard) returns a 404 from Netlify's CDN
+# because there is no server-side file at that path.
+# This rule rewrites every 404 back to index.html so the JS bundle loads and
+# React Navigation takes over routing.
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
