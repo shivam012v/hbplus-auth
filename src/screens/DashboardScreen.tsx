@@ -48,7 +48,10 @@ interface DashboardScreenProps {
 }
 
 // ─── Breakpoints ──────────────────────────────────────────────────────────────
-const BP_MOBILE  = 768;
+// 640px is the boundary between mobile and tablet/desktop.
+// Using 640 (not 768) ensures phones at 390–430px are firmly in mobile territory
+// and avoids any timing ambiguity with useWindowDimensions on initial render.
+const BP_MOBILE  = 640;
 const BP_DESKTOP = 1024;
 const SIDEBAR_FULL = 220;
 const SIDEBAR_MINI = 64;
@@ -768,6 +771,9 @@ const mtb = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: C.headerBg, borderBottomWidth: 1, borderBottomColor: C.border,
     paddingHorizontal: 14, paddingVertical: 11, gap: 8,
+    // Prevent bar from growing taller than its content.
+    // @ts-ignore
+    flexShrink: 0,
   },
   brand: { fontSize: 20, fontWeight: '900', color: C.textPrimary, letterSpacing: -0.5 },
   brandPlus: { color: C.purple },
@@ -782,18 +788,33 @@ const mtb = StyleSheet.create({
     flexShrink: 0,
   },
   logoutLabel: { fontSize: 11, fontWeight: '600', color: C.rose },
-  // The ScrollView must not exceed the viewport width.
-  // overflow: 'hidden' on the outer view prevents the scroll container from
-  // leaking and causing a page-level horizontal scroll bar.
   tabsScroll: {
     backgroundColor: C.sidebarBg,
     borderBottomWidth: 1,
     borderBottomColor: C.border,
+    // Prevent the ScrollView from growing to fill remaining height.
+    // Without this, on some RN Web builds it can expand vertically.
+    flexShrink: 0,
+    flexGrow: 0,
   },
-  tabsContent: { paddingHorizontal: 10, paddingVertical: 8, gap: 4 },
-  tab: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  tabActive: { backgroundColor: C.purpleDim, borderWidth: 1, borderColor: C.purpleBorder },
-  tabText: { fontSize: 13, color: C.textSec, fontWeight: '500', flexShrink: 1 },
+  tabsContent: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 4,
+    // alignItems ensures tab pills stay compact around their text.
+    alignItems: 'center',
+  },
+  // Each tab: height is determined by padding + text only, never grows taller.
+  tab: {
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  tabActive: {
+    backgroundColor: C.purpleDim,
+    borderWidth: 1,
+    borderColor: C.purpleBorder,
+  },
+  tabText: { fontSize: 13, color: C.textSec, fontWeight: '500' },
   tabTextActive: { color: C.purpleLight, fontWeight: '700' },
 });
 
@@ -1036,7 +1057,19 @@ export default function DashboardScreen({ user }: DashboardScreenProps) {
 }
 
 const root = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.pageBg },
+  safe: {
+    flex: 1,
+    backgroundColor: C.pageBg,
+    // Prevent any child from causing horizontal page scroll on web.
+    // @ts-ignore — overflow is a valid web style via RN Web
+    overflow: 'hidden',
+  },
   desktop: { flex: 1, flexDirection: 'row' },
-  mobile:  { flex: 1, flexDirection: 'column' },
+  mobile:  {
+    flex: 1,
+    flexDirection: 'column',
+    // Clip overflow so no child can push the viewport wider than the screen.
+    // @ts-ignore
+    overflow: 'hidden',
+  },
 });
